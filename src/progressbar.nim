@@ -6,7 +6,6 @@ import
 const
   CR = "\r"
   LF = "\n"
-  TAB = "\t"
 
 type
   ProgressBar* = object
@@ -17,7 +16,7 @@ type
     total*: int
     current*: int
 
-proc initPB*(delimChars: array[0..1, string] = ["[", "]"],
+proc initPb*(delimChars: array[0..1, string] = ["[", "]"],
               progressChars: array[0..1, string] = ["\u275a", "-"],
               progressCharsNbr: int = 100,
               total: int): ProgressBar =
@@ -28,10 +27,12 @@ proc initPB*(delimChars: array[0..1, string] = ["[", "]"],
   result.total = total
   result.bar = fmt"{delimChars[0]}$1{delimChars[1]}"
 
-proc updatePB*(pb: var ProgressBar,
+proc updatePb*(pb: var ProgressBar,
                 current: int = -1,
                 step: int = -1,
-                percent_only: bool = false) =
+                percent_only: bool = false,
+                prefix: string = "",
+                suffix: string = "") =
 
   if step >= 0:
     pb.current = pb.total - (pb.total - (pb.current + step))
@@ -44,24 +45,25 @@ proc updatePB*(pb: var ProgressBar,
   bar = bar & pb.progressChars[1].repeat(remain)
 
   var progressBar: string
-  var endBar: string
-  case remain
-  of 0:
-    endBar = LF
-  else:
-    endBar = TAB
+  var endBar = case remain:
+    of 0: CR & LF
+    else: ""
 
   if not percent_only:
     progressBar = join([
       CR,
+      fmt"{prefix}",
       pb.bar % [bar],
       fmt" {progress}%",
+      fmt"{suffix}",
       endBar
     ])
   else:
     progressBar = join([
       CR,
+      fmt"{prefix}",
       fmt"{progress}%",
+      fmt"{suffix}",
       endBar
     ])
 
